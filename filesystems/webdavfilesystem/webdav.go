@@ -3,7 +3,7 @@ package webdavfilesystem
 import (
 	"fmt"
 	"github.com/studio-b12/gowebdav"
-	"github.com/tsawler/celeritas/filesystems"
+	"github.com/bxtal-lsn/go-boilme/filesystems"
 	"io"
 	"os"
 	"path"

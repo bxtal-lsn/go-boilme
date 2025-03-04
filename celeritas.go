@@ -2,10 +2,6 @@ package celeritas
 
 import (
 	"fmt"
-	"github.com/tsawler/celeritas/filesystems/miniofilesystem"
-	"github.com/tsawler/celeritas/filesystems/s3filesystem"
-	"github.com/tsawler/celeritas/filesystems/sftpfilesystem"
-	"github.com/tsawler/celeritas/filesystems/webdavfilesystem"
 	"log"
 	"net"
 	"net/rpc"
@@ -14,30 +10,37 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bxtal-lsn/go-boilme/filesystems/miniofilesystem"
+	"github.com/bxtal-lsn/go-boilme/filesystems/s3filesystem"
+	"github.com/bxtal-lsn/go-boilme/filesystems/sftpfilesystem"
+	"github.com/bxtal-lsn/go-boilme/filesystems/webdavfilesystem"
+
 	"github.com/CloudyKit/jet/v6"
 	"github.com/alexedwards/scs/v2"
+	"github.com/bxtal-lsn/go-boilme/cache"
+	"github.com/bxtal-lsn/go-boilme/mailer"
+	"github.com/bxtal-lsn/go-boilme/render"
+	"github.com/bxtal-lsn/go-boilme/session"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/go-chi/chi/v5"
 	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
-	"github.com/tsawler/celeritas/cache"
-	"github.com/tsawler/celeritas/mailer"
-	"github.com/tsawler/celeritas/render"
-	"github.com/tsawler/celeritas/session"
 )
 
 const version = "1.0.0"
 
-var myRedisCache *cache.RedisCache
-var myBadgerCache *cache.BadgerCache
-var redisPool *redis.Pool
-var badgerConn *badger.DB
-var maintenanceMode bool
+var (
+	myRedisCache    *cache.RedisCache
+	myBadgerCache   *cache.BadgerCache
+	redisPool       *redis.Pool
+	badgerConn      *badger.DB
+	maintenanceMode bool
+)
 
-// Celeritas is the overall type for the Celeritas package. Members that are exported in this type
+// Boilme is the overall type for the Boilme package. Members that are exported in this type
 // are available to any application that uses it.
-type Celeritas struct {
+type Boilme struct {
 	AppName       string
 	Debug         bool
 	Version       string
@@ -84,20 +87,20 @@ type uploadConfig struct {
 	maxUploadSize    int64
 }
 
-// New reads the .env file, creates our application config, populates the Celeritas type with settings
+// New reads the .env file, creates our application config, populates the Boilme type with settings
 // based on .env values, and creates necessary folders and files if they don't exist
-func (c *Celeritas) New(rootPath string) error {
+func (b *Boilme) New(rootPath string) error {
 	pathConfig := initPaths{
 		rootPath:    rootPath,
 		folderNames: []string{"handlers", "migrations", "views", "mail", "data", "public", "tmp", "logs", "middleware", "screenshots"},
 	}
 
-	err := c.Init(pathConfig)
+	err := b.Init(pathConfig)
 	if err != nil {
 		return err
 	}
 
-	err = c.checkDotEnv(rootPath)
+	err = b.checkDotEnv(rootPath)
 	if err != nil {
 		return err
 	}
@@ -109,36 +112,36 @@ func (c *Celeritas) New(rootPath string) error {
 	}
 
 	// create loggers
-	infoLog, errorLog := c.startLoggers()
+	infoLog, errorLog := b.startLoggers()
 
 	// connect to database
 	if os.Getenv("DATABASE_TYPE") != "" {
-		db, err := c.OpenDB(os.Getenv("DATABASE_TYPE"), c.BuildDSN())
+		db, err := b.OpenDB(os.Getenv("DATABASE_TYPE"), b.BuildDSN())
 		if err != nil {
 			errorLog.Println(err)
 			os.Exit(1)
 		}
-		c.DB = Database{
+		b.DB = Database{
 			DataType: os.Getenv("DATABASE_TYPE"),
 			Pool:     db,
 		}
 	}
 
 	scheduler := cron.New()
-	c.Scheduler = scheduler
+	b.Scheduler = scheduler
 
 	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
-		myRedisCache = c.createClientRedisCache()
-		c.Cache = myRedisCache
+		myRedisCache = b.createClientRedisCache()
+		b.Cache = myRedisCache
 		redisPool = myRedisCache.Conn
 	}
 
 	if os.Getenv("CACHE") == "badger" {
-		myBadgerCache = c.createClientBadgerCache()
-		c.Cache = myBadgerCache
+		myBadgerCache = b.createClientBadgerCache()
+		b.Cache = myBadgerCache
 		badgerConn = myBadgerCache.Conn
 
-		_, err = c.Scheduler.AddFunc("@daily", func() {
+		_, err = b.Scheduler.AddFunc("@daily", func() {
 			_ = myBadgerCache.Conn.RunValueLogGC(0.7)
 		})
 		if err != nil {
@@ -146,13 +149,13 @@ func (c *Celeritas) New(rootPath string) error {
 		}
 	}
 
-	c.InfoLog = infoLog
-	c.ErrorLog = errorLog
-	c.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
-	c.Version = version
-	c.RootPath = rootPath
-	c.Mail = c.createMailer()
-	c.Routes = c.routes().(*chi.Mux)
+	b.InfoLog = infoLog
+	b.ErrorLog = errorLog
+	b.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
+	b.Version = version
+	b.RootPath = rootPath
+	b.Mail = b.createMailer()
+	b.Routes = b.routes().(*chi.Mux)
 
 	// file uploads
 	exploded := strings.Split(os.Getenv("ALLOWED_FILETYPES"), ",")
@@ -168,7 +171,7 @@ func (c *Celeritas) New(rootPath string) error {
 		maxUploadSize = int64(max)
 	}
 
-	c.config = config{
+	b.config = config{
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
 		cookie: cookieConfig{
@@ -181,7 +184,7 @@ func (c *Celeritas) New(rootPath string) error {
 		sessionType: os.Getenv("SESSION_TYPE"),
 		database: databaseConfig{
 			database: os.Getenv("DATABASE_TYPE"),
-			dsn:      c.BuildDSN(),
+			dsn:      b.BuildDSN(),
 		},
 		redis: redisConfig{
 			host:     os.Getenv("REDIS_HOST"),
@@ -199,7 +202,7 @@ func (c *Celeritas) New(rootPath string) error {
 		secure = false
 	}
 
-	c.Server = Server{
+	b.Server = Server{
 		ServerName: os.Getenv("SERVER_NAME"),
 		Port:       os.Getenv("PORT"),
 		Secure:     secure,
@@ -209,49 +212,49 @@ func (c *Celeritas) New(rootPath string) error {
 	// create session
 
 	sess := session.Session{
-		CookieLifetime: c.config.cookie.lifetime,
-		CookiePersist:  c.config.cookie.persist,
-		CookieName:     c.config.cookie.name,
-		SessionType:    c.config.sessionType,
-		CookieDomain:   c.config.cookie.domain,
+		CookieLifetime: b.config.cookie.lifetime,
+		CookiePersist:  b.config.cookie.persist,
+		CookieName:     b.config.cookie.name,
+		SessionType:    b.config.sessionType,
+		CookieDomain:   b.config.cookie.domain,
 	}
 
-	switch c.config.sessionType {
+	switch b.config.sessionType {
 	case "redis":
 		sess.RedisPool = myRedisCache.Conn
 	case "mysql", "postgres", "mariadb", "postgresql":
-		sess.DBPool = c.DB.Pool
+		sess.DBPool = b.DB.Pool
 	}
 
-	c.Session = sess.InitSession()
-	c.EncryptionKey = os.Getenv("KEY")
+	b.Session = sess.InitSession()
+	b.EncryptionKey = os.Getenv("KEY")
 
-	if c.Debug {
-		var views = jet.NewSet(
+	if b.Debug {
+		views := jet.NewSet(
 			jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
 			jet.InDevelopmentMode(),
 		)
-		c.JetViews = views
+		b.JetViews = views
 	} else {
-		var views = jet.NewSet(
+		views := jet.NewSet(
 			jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
 		)
-		c.JetViews = views
+		b.JetViews = views
 	}
 
-	c.createRenderer()
-	c.FileSystems = c.createFileSystems()
-	go c.Mail.ListenForMail()
+	b.createRenderer()
+	b.FileSystems = b.createFileSystems()
+	go b.Mail.ListenForMail()
 
 	return nil
 }
 
-// Init creates necessary folders for our Celeritas application
-func (c *Celeritas) Init(p initPaths) error {
+// Init creates necessary folders for our Boilme application
+func (b *Boilme) Init(p initPaths) error {
 	root := p.rootPath
 	for _, path := range p.folderNames {
 		// create folder if it doesn't exist
-		err := c.CreateDirIfNotExist(root + "/" + path)
+		err := b.CreateDirIfNotExist(root + "/" + path)
 		if err != nil {
 			return err
 		}
@@ -259,15 +262,15 @@ func (c *Celeritas) Init(p initPaths) error {
 	return nil
 }
 
-func (c *Celeritas) checkDotEnv(path string) error {
-	err := c.CreateFileIfNotExists(fmt.Sprintf("%s/.env", path))
+func (b *Boilme) checkDotEnv(path string) error {
+	err := b.CreateFileIfNotExists(fmt.Sprintf("%s/.env", path))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *Celeritas) startLoggers() (*log.Logger, *log.Logger) {
+func (b *Boilme) startLoggers() (*log.Logger, *log.Logger) {
 	var infoLog *log.Logger
 	var errorLog *log.Logger
 
@@ -277,22 +280,22 @@ func (c *Celeritas) startLoggers() (*log.Logger, *log.Logger) {
 	return infoLog, errorLog
 }
 
-func (c *Celeritas) createRenderer() {
+func (b *Boilme) createRenderer() {
 	myRenderer := render.Render{
-		Renderer: c.config.renderer,
-		RootPath: c.RootPath,
-		Port:     c.config.port,
-		JetViews: c.JetViews,
-		Session:  c.Session,
+		Renderer: b.config.renderer,
+		RootPath: b.RootPath,
+		Port:     b.config.port,
+		JetViews: b.JetViews,
+		Session:  b.Session,
 	}
-	c.Render = &myRenderer
+	b.Render = &myRenderer
 }
 
-func (c *Celeritas) createMailer() mailer.Mail {
+func (b *Boilme) createMailer() mailer.Mail {
 	port, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
 	m := mailer.Mail{
 		Domain:      os.Getenv("MAIL_DOMAIN"),
-		Templates:   c.RootPath + "/mail",
+		Templates:   b.RootPath + "/mail",
 		Host:        os.Getenv("SMTP_HOST"),
 		Port:        port,
 		Username:    os.Getenv("SMTP_USERNAME"),
@@ -309,30 +312,30 @@ func (c *Celeritas) createMailer() mailer.Mail {
 	return m
 }
 
-func (c *Celeritas) createClientRedisCache() *cache.RedisCache {
+func (b *Boilme) createClientRedisCache() *cache.RedisCache {
 	cacheClient := cache.RedisCache{
-		Conn:   c.createRedisPool(),
-		Prefix: c.config.redis.prefix,
+		Conn:   b.createRedisPool(),
+		Prefix: b.config.redis.prefix,
 	}
 	return &cacheClient
 }
 
-func (c *Celeritas) createClientBadgerCache() *cache.BadgerCache {
+func (b *Boilme) createClientBadgerCache() *cache.BadgerCache {
 	cacheClient := cache.BadgerCache{
-		Conn: c.createBadgerConn(),
+		Conn: b.createBadgerConn(),
 	}
 	return &cacheClient
 }
 
-func (c *Celeritas) createRedisPool() *redis.Pool {
+func (b *Boilme) createRedisPool() *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:     50,
 		MaxActive:   10000,
 		IdleTimeout: 240 * time.Second,
 		Dial: func() (redis.Conn, error) {
 			return redis.Dial("tcp",
-				c.config.redis.host,
-				redis.DialPassword(c.config.redis.password))
+				b.config.redis.host,
+				redis.DialPassword(b.config.redis.password))
 		},
 
 		TestOnBorrow: func(conn redis.Conn, t time.Time) error {
@@ -342,8 +345,8 @@ func (c *Celeritas) createRedisPool() *redis.Pool {
 	}
 }
 
-func (c *Celeritas) createBadgerConn() *badger.DB {
-	db, err := badger.Open(badger.DefaultOptions(c.RootPath + "/tmp/badger"))
+func (b *Boilme) createBadgerConn() *badger.DB {
+	db, err := badger.Open(badger.DefaultOptions(b.RootPath + "/tmp/badger"))
 	if err != nil {
 		return nil
 	}
@@ -351,7 +354,7 @@ func (c *Celeritas) createBadgerConn() *badger.DB {
 }
 
 // BuildDSN builds the datasource name for our database, and returns it as a string
-func (c *Celeritas) BuildDSN() string {
+func (b *Boilme) BuildDSN() string {
 	var dsn string
 
 	switch os.Getenv("DATABASE_TYPE") {
@@ -385,7 +388,7 @@ func (c *Celeritas) BuildDSN() string {
 	return dsn
 }
 
-func (c *Celeritas) createFileSystems() map[string]interface{} {
+func (b *Boilme) createFileSystems() map[string]interface{} {
 	fileSystems := make(map[string]interface{})
 
 	if os.Getenv("S3_KEY") != "" {
@@ -397,7 +400,7 @@ func (c *Celeritas) createFileSystems() map[string]interface{} {
 			Bucket:   os.Getenv("S3_BUCKET"),
 		}
 		fileSystems["S3"] = s3
-		c.S3 = s3
+		b.S3 = s3
 	}
 
 	if os.Getenv("MINIO_SECRET") != "" {
@@ -415,7 +418,7 @@ func (c *Celeritas) createFileSystems() map[string]interface{} {
 			Bucket:   os.Getenv("MINIO_BUCKET"),
 		}
 		fileSystems["MINIO"] = minio
-		c.Minio = minio
+		b.Minio = minio
 	}
 
 	if os.Getenv("SFTP_HOST") != "" {
@@ -426,7 +429,7 @@ func (c *Celeritas) createFileSystems() map[string]interface{} {
 			Port: os.Getenv("SFTP_PORT"),
 		}
 		fileSystems["SFTP"] = sftp
-		c.SFTP = sftp
+		b.SFTP = sftp
 	}
 
 	if os.Getenv("WEBDAV_HOST") != "" {
@@ -436,7 +439,7 @@ func (c *Celeritas) createFileSystems() map[string]interface{} {
 			Pass: os.Getenv("WEBDAV_PASS"),
 		}
 		fileSystems["WEBDAV"] = webDav
-		c.WebDAV = webDav
+		b.WebDAV = webDav
 	}
 
 	return fileSystems
@@ -455,18 +458,18 @@ func (r *RPCServer) MaintenanceMode(inMaintenanceMode bool, resp *string) error 
 	return nil
 }
 
-func (c *Celeritas) listenRPC() {
+func (b *Boilme) listenRPC() {
 	// if nothing specified for rpc port, don't start
 	if os.Getenv("RPC_PORT") != "" {
-		c.InfoLog.Println("Starting RPC server on port", os.Getenv("RPC_PORT"))
+		b.InfoLog.Println("Starting RPC server on port", os.Getenv("RPC_PORT"))
 		err := rpc.Register(new(RPCServer))
 		if err != nil {
-			c.ErrorLog.Println(err)
+			b.ErrorLog.Println(err)
 			return
 		}
 		listen, err := net.Listen("tcp", "127.0.0.1:"+os.Getenv("RPC_PORT"))
 		if err != nil {
-			c.ErrorLog.Println(err)
+			b.ErrorLog.Println(err)
 			return
 		}
 		for {

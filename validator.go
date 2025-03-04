@@ -15,7 +15,7 @@ type Validation struct {
 	Errors map[string]string
 }
 
-func (c *Celeritas) Validator(data url.Values) *Validation {
+func (b *Boilme) Validator(data url.Values) *Validation {
 	return &Validation{
 		Errors: make(map[string]string),
 		Data: data,

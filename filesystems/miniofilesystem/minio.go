@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/tsawler/celeritas/filesystems"
+	"github.com/bxtal-lsn/go-boilme/filesystems"
 	"log"
 	"path"
 	"strings"

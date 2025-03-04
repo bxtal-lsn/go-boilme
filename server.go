@@ -7,18 +7,18 @@ import (
 	"time"
 )
 
-func (c *Celeritas) ListenAndServe() error {
+func (b *Boilme) ListenAndServe() error {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
-		ErrorLog:     c.ErrorLog,
-		Handler:      c.Routes,
+		ErrorLog:     b.ErrorLog,
+		Handler:      b.Routes,
 		IdleTimeout:  30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 600 * time.Second,
 	}
 
-	if c.DB.Pool != nil {
-		defer c.DB.Pool.Close()
+	if b.DB.Pool != nil {
+		defer b.DB.Pool.Close()
 	}
 
 	if redisPool != nil {
@@ -29,7 +29,7 @@ func (c *Celeritas) ListenAndServe() error {
 		defer badgerConn.Close()
 	}
 
-	go c.listenRPC()
-	c.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
+	go b.listenRPC()
+	b.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
 	return srv.ListenAndServe()
 }

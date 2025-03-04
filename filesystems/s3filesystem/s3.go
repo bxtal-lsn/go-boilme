@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/tsawler/celeritas/filesystems"
+	"github.com/bxtal-lsn/go-boilme/filesystems"
 	"net/http"
 	"os"
 	"path"

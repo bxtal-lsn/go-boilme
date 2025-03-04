@@ -20,7 +20,7 @@ func TestSession_InitSession(t *testing.T) {
 
 	var sm *scs.SessionManager
 
-	ses := c.InitSession()
+	ses := b.InitSession()
 
 	var sessKind reflect.Kind
 	var sessType reflect.Type

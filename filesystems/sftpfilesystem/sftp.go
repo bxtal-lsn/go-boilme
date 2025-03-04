@@ -3,7 +3,7 @@ package sftpfilesystem
 import (
 	"fmt"
 	"github.com/pkg/sftp"
-	"github.com/tsawler/celeritas/filesystems"
+	"github.com/bxtal-lsn/go-boilme/filesystems"
 	"golang.org/x/crypto/ssh"
 	"io"
 	"log"

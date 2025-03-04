@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (c *Celeritas) TakeScreenShot(pageURL, testName string, w, h float64) {
+func (b *Boilme) TakeScreenShot(pageURL, testName string, w, h float64) {
 	page := rod.New().MustConnect().MustIgnoreCertErrors(true).MustPage(pageURL).MustWaitLoad()
 
 	img, _ := page.Screenshot(true, &proto.PageCaptureScreenshot{
@@ -23,13 +23,13 @@ func (c *Celeritas) TakeScreenShot(pageURL, testName string, w, h float64) {
 		FromSurface: true,
 	})
 	fileName := time.Now().Format("2006-01-02-15-04-05.000000")
-	_ = utils.OutputFile(fmt.Sprintf("%s/screenshots/%s-%s.png", c.RootPath, testName, fileName), img)
+	_ = utils.OutputFile(fmt.Sprintf("%s/screenshots/%s-%s.png", b.RootPath, testName, fileName), img)
 }
 
-func (c *Celeritas) FetchPage(pageURL string) *rod.Page {
+func (b *Boilme) FetchPage(pageURL string) *rod.Page {
 	return rod.New().MustConnect().MustIgnoreCertErrors(true).MustPage(pageURL).MustWaitLoad()
 }
 
-func (c *Celeritas) SelectElementByID(page *rod.Page, id string) *rod.Element {
+func (b *Boilme) SelectElementByID(page *rod.Page, id string) *rod.Element {
 	return page.MustElementByJS(fmt.Sprintf("document.getElementById('%s')", id))
 }

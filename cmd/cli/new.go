@@ -31,7 +31,7 @@ func doNew(appName string) {
 	color.Green("\tCloning repository...")
 	_, err := git.PlainClone("./"+appName, false, &git.CloneOptions{
 		// URL: "git@github.com:tsawler/celeritas-app.git",
-		URL:      "https://github.com/tsawler/celeritas-app.git",
+		URL:      "https://github.com/bxtal-lsn/go-boilme-app.git",
 		Progress: os.Stdout,
 		Depth:    1,
 	})
@@ -54,7 +54,7 @@ func doNew(appName string) {
 
 	env := string(data)
 	env = strings.ReplaceAll(env, "${APP_NAME}", appName)
-	env = strings.ReplaceAll(env, "${KEY}", cel.RandomString(32))
+	env = strings.ReplaceAll(env, "${KEY}", boil.RandomString(32))
 
 	err = copyDataToFile([]byte(env), fmt.Sprintf("./%s/.env", appName))
 	if err != nil {
@@ -125,7 +125,7 @@ func doNew(appName string) {
 	// run go mod tidy in the project directory
 	color.Yellow("\tRunning go mod tidy...")
 
-	cmd := exec.Command("go", "get", "github.com/tsawler/celeritas")
+	cmd := exec.Command("go", "get", "github.com/bxtal-lsn/go-boilme")
 	err = cmd.Start()
 	if err != nil {
 		exitGracefully(err)

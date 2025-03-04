@@ -23,13 +23,13 @@ func setup(arg1, arg2 string) {
 			exitGracefully(err)
 		}
 
-		cel.RootPath = path
-		cel.DB.DataType = os.Getenv("DATABASE_TYPE")
+		boil.RootPath = path
+		boil.DB.DataType = os.Getenv("DATABASE_TYPE")
 	}
 }
 
 func getDSN() string {
-	dbType := cel.DB.DataType
+	dbType := boil.DB.DataType
 
 	if dbType == "pgx" {
 		dbType = "postgres"
@@ -55,17 +55,17 @@ func getDSN() string {
 		}
 		return dsn
 	}
-	return "mysql://" + cel.BuildDSN()
+	return "mysql://" + boil.BuildDSN()
 }
 
 func checkForDB() {
-	dbType := cel.DB.DataType
+	dbType := boil.DB.DataType
 
 	if dbType == "" {
 		exitGracefully(errors.New("no database connection provided in .env"))
 	}
 
-	if !fileExists(cel.RootPath + "/config/database.yml") {
+	if !fileExists(boil.RootPath + "/config/database.yml") {
 		exitGracefully(errors.New("config/database.yml does not exist"))
 	}
 }

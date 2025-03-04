@@ -4,30 +4,30 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gabriel-vasile/mimetype"
-	"github.com/tsawler/celeritas/filesystems"
+	"github.com/bxtal-lsn/go-boilme/filesystems"
 	"io"
 	"net/http"
 	"os"
 	"path"
 )
 
-func (c *Celeritas) UploadFile(r *http.Request, destination, field string, fs filesystems.FS) error {
-	fileName, err := c.getFileToUpload(r, field)
+func (b *Boilme) UploadFile(r *http.Request, destination, field string, fs filesystems.FS) error {
+	fileName, err := b.getFileToUpload(r, field)
 	if err != nil {
-		c.ErrorLog.Println(err)
+		b.ErrorLog.Println(err)
 		return err
 	}
 
 	if fs != nil {
 		err = fs.Put(fileName, destination)
 		if err != nil {
-			c.ErrorLog.Println(err)
+			b.ErrorLog.Println(err)
 			return err
 		}
 	} else {
 		err = os.Rename(fileName, fmt.Sprintf("%s/%s", destination, path.Base(fileName)))
 		if err != nil {
-			c.ErrorLog.Println(err)
+			b.ErrorLog.Println(err)
 			return err
 		}
 	}
@@ -39,8 +39,8 @@ func (c *Celeritas) UploadFile(r *http.Request, destination, field string, fs fi
 	return nil
 }
 
-func (c *Celeritas) getFileToUpload(r *http.Request, fieldName string) (string, error) {
-	_ = r.ParseMultipartForm(c.config.uploads.maxUploadSize)
+func (b *Boilme) getFileToUpload(r *http.Request, fieldName string) (string, error) {
+	_ = r.ParseMultipartForm(b.config.uploads.maxUploadSize)
 
 	file, header, err := r.FormFile(fieldName)
 	if err != nil {
@@ -59,7 +59,7 @@ func (c *Celeritas) getFileToUpload(r *http.Request, fieldName string) (string, 
 		return "", err
 	}
 
-	if !inSlice(c.config.uploads.allowedMimeTypes, mimeType.String()) {
+	if !inSlice(b.config.uploads.allowedMimeTypes, mimeType.String()) {
 		return "", errors.New("invalid file type uploaded")
 	}
 

@@ -5,10 +5,8 @@ import (
 	"time"
 )
 
-
-
 func doSessionTable() error {
-	dbType := cel.DB.DataType
+	dbType := boil.DB.DataType
 
 	if dbType == "mariadb" {
 		dbType = "mysql"
@@ -20,8 +18,8 @@ func doSessionTable() error {
 
 	fileName := fmt.Sprintf("%d_create_sessions_table", time.Now().UnixMicro())
 
-	upFile := cel.RootPath + "/migrations/" + fileName + "." + dbType + ".up.sql"
-	downFile := cel.RootPath + "/migrations/" + fileName + "." + dbType + ".down.sql"
+	upFile := boil.RootPath + "/migrations/" + fileName + "." + dbType + ".up.sql"
+	downFile := boil.RootPath + "/migrations/" + fileName + "." + dbType + ".down.sql"
 
 	err := copyFilefromTemplate("templates/migrations/"+dbType+"_session.sql", upFile)
 	if err != nil {
@@ -40,3 +38,4 @@ func doSessionTable() error {
 
 	return nil
 }
+

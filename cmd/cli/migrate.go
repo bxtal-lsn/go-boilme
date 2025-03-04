@@ -1,10 +1,10 @@
 package main
 
 func doMigrate(arg2, arg3 string) error {
-	//dsn := getDSN()
+	// dsn := getDSN()
 	checkForDB()
 
-	tx, err := cel.PopConnect()
+	tx, err := boil.PopConnect()
 	if err != nil {
 		exitGracefully(err)
 	}
@@ -13,26 +13,26 @@ func doMigrate(arg2, arg3 string) error {
 	// run the migration command
 	switch arg2 {
 	case "up":
-		err := cel.RunPopMigrations(tx)
+		err := boil.RunPopMigrations(tx)
 		if err != nil {
 			return err
 		}
 
 	case "down":
 		if arg3 == "all" {
-			err := cel.PopMigrateDown(tx, -1)
+			err := boil.PopMigrateDown(tx, -1)
 			if err != nil {
 				return err
 			}
 		} else {
-			err := cel.PopMigrateDown(tx, 1)
+			err := boil.PopMigrateDown(tx, 1)
 			if err != nil {
 				return err
 			}
 		}
 
 	case "reset":
-		err := cel.PopMigrateReset(tx)
+		err := boil.PopMigrateReset(tx)
 		if err != nil {
 			return err
 		}
@@ -42,3 +42,4 @@ func doMigrate(arg2, arg3 string) error {
 
 	return nil
 }
+

@@ -4,13 +4,13 @@ import (
 	"errors"
 	"os"
 
+	boilme "github.com/bxtal-lsn/go-boilme"
 	"github.com/fatih/color"
-	"github.com/tsawler/celeritas"
 )
 
 const version = "1.0.0"
 
-var cel celeritas.Celeritas
+var boil boilme.Boilme
 
 func main() {
 	var message string

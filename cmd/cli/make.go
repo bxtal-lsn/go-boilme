@@ -2,25 +2,25 @@ package main
 
 import (
 	"errors"
+	"io/ioutil"
+	"strings"
+
 	"github.com/fatih/color"
 	"github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
-	"io/ioutil"
-	"strings"
 )
 
 func doMake(arg2, arg3, arg4 string) error {
-
 	switch arg2 {
 	case "key":
-		rnd := cel.RandomString(32)
+		rnd := boil.RandomString(32)
 		color.Yellow("32 character encryption key: %s", rnd)
 
 	case "migration":
 		checkForDB()
 
-		//dbType := cel.DB.DataType
-		if arg3 == ""{
+		// dbType := boil.DB.DataType
+		if arg3 == "" {
 			exitGracefully(errors.New("you must give the migration a name"))
 		}
 
@@ -41,7 +41,7 @@ func doMake(arg2, arg3, arg4 string) error {
 
 		// create the migrations for either fizz or sql
 
-		err := cel.CreatePopMigration([]byte(up), []byte(down), arg3, migrationType)
+		err := boil.CreatePopMigration([]byte(up), []byte(down), arg3, migrationType)
 		if err != nil {
 			exitGracefully(err)
 		}
@@ -57,7 +57,7 @@ func doMake(arg2, arg3, arg4 string) error {
 			exitGracefully(errors.New("you must give the handler a name"))
 		}
 
-		fileName := cel.RootPath + "/handlers/" + strings.ToLower(arg3) + ".go"
+		fileName := boil.RootPath + "/handlers/" + strings.ToLower(arg3) + ".go"
 		if fileExists(fileName) {
 			exitGracefully(errors.New(fileName + " already exists!"))
 		}
@@ -70,7 +70,7 @@ func doMake(arg2, arg3, arg4 string) error {
 		handler := string(data)
 		handler = strings.ReplaceAll(handler, "$HANDLERNAME$", strcase.ToCamel(arg3))
 
-		err = ioutil.WriteFile(fileName, []byte(handler), 0644)
+		err = ioutil.WriteFile(fileName, []byte(handler), 0o644)
 		if err != nil {
 			exitGracefully(err)
 		}
@@ -89,17 +89,17 @@ func doMake(arg2, arg3, arg4 string) error {
 
 		plur := pluralize.NewClient()
 
-		var modelName = arg3
-		var tableName = arg3
+		modelName := arg3
+		tableName := arg3
 
 		if plur.IsPlural(arg3) {
 			modelName = plur.Singular(arg3)
 			tableName = strings.ToLower(tableName)
 		} else {
-			tableName= strings.ToLower(plur.Plural(arg3))
+			tableName = strings.ToLower(plur.Plural(arg3))
 		}
 
-		fileName := cel.RootPath + "/data/" + strings.ToLower(modelName) + ".go"
+		fileName := boil.RootPath + "/data/" + strings.ToLower(modelName) + ".go"
 		if fileExists(fileName) {
 			exitGracefully(errors.New(fileName + " already exists!"))
 		}
@@ -116,8 +116,8 @@ func doMake(arg2, arg3, arg4 string) error {
 		if arg3 == "" {
 			exitGracefully(errors.New("you must give the mail template a name"))
 		}
-		htmlMail := cel.RootPath + "/mail/" + strings.ToLower(arg3) + ".html.tmpl"
-		plainMail := cel.RootPath + "/mail/" + strings.ToLower(arg3) + ".plain.tmpl"
+		htmlMail := boil.RootPath + "/mail/" + strings.ToLower(arg3) + ".html.tmpl"
+		plainMail := boil.RootPath + "/mail/" + strings.ToLower(arg3) + ".plain.tmpl"
 
 		err := copyFilefromTemplate("templates/mailer/mail.html.tmpl", htmlMail)
 		if err != nil {
@@ -138,3 +138,4 @@ func doMake(arg2, arg3, arg4 string) error {
 
 	return nil
 }
+

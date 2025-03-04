@@ -12,7 +12,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func (c *Celeritas) PopConnect() (*pop.Connection, error) {
+func (b *Boilme) PopConnect() (*pop.Connection, error) {
 	tx, err := pop.Connect("development")
 	if err != nil {
 		return nil, err
@@ -20,8 +20,8 @@ func (c *Celeritas) PopConnect() (*pop.Connection, error) {
 	return tx, nil
 }
 
-func (c *Celeritas) CreatePopMigration(up, down []byte, migrationName, migrationType string) error {
-	var migrationPath = c.RootPath + "/migrations"
+func (b *Boilme) CreatePopMigration(up, down []byte, migrationName, migrationType string) error {
+	var migrationPath = b.RootPath + "/migrations"
 	err := pop.MigrationCreate(migrationPath, migrationName, migrationType, up, down)
 	if err != nil {
 		return err
@@ -29,8 +29,8 @@ func (c *Celeritas) CreatePopMigration(up, down []byte, migrationName, migration
 	return nil
 }
 
-func (c *Celeritas) RunPopMigrations(tx *pop.Connection) error {
-	var migrationPath = c.RootPath + "/migrations"
+func (b *Boilme) RunPopMigrations(tx *pop.Connection) error {
+	var migrationPath = b.RootPath + "/migrations"
 
 	fm, err := pop.NewFileMigrator(migrationPath, tx)
 	if err != nil {
@@ -44,8 +44,8 @@ func (c *Celeritas) RunPopMigrations(tx *pop.Connection) error {
 	return nil
 }
 
-func (c *Celeritas) PopMigrateDown(tx *pop.Connection, steps ...int) error {
-	var migrationPath = c.RootPath + "/migrations"
+func (b *Boilme) PopMigrateDown(tx *pop.Connection, steps ...int) error {
+	var migrationPath = b.RootPath + "/migrations"
 
 	step := 1
 	if len(steps) > 0 {
@@ -65,8 +65,8 @@ func (c *Celeritas) PopMigrateDown(tx *pop.Connection, steps ...int) error {
 	return nil
 }
 
-func (c *Celeritas) PopMigrateReset(tx *pop.Connection) error {
-	var migrationPath = c.RootPath + "/migrations"
+func (b *Boilme) PopMigrateReset(tx *pop.Connection) error {
+	var migrationPath = b.RootPath + "/migrations"
 
 	fm, err := pop.NewFileMigrator(migrationPath, tx)
 	if err != nil {
@@ -80,8 +80,8 @@ func (c *Celeritas) PopMigrateReset(tx *pop.Connection) error {
 	return nil
 }
 
-func (c *Celeritas) MigrateUp(dsn string) error {
-	m, err := migrate.New("file://" + c.RootPath + "/migrations", dsn)
+func (b *Boilme) MigrateUp(dsn string) error {
+	m, err := migrate.New("file://" + b.RootPath + "/migrations", dsn)
 	if err != nil {
 		return err
 	}
@@ -94,8 +94,8 @@ func (c *Celeritas) MigrateUp(dsn string) error {
 	return nil
 }
 
-func (c *Celeritas) MigrateDownAll(dsn string) error {
-	m, err := migrate.New("file://" + c.RootPath + "/migrations", dsn)
+func (b *Boilme) MigrateDownAll(dsn string) error {
+	m, err := migrate.New("file://" + b.RootPath + "/migrations", dsn)
 	if err != nil {
 		return err
 	}
@@ -108,8 +108,8 @@ func (c *Celeritas) MigrateDownAll(dsn string) error {
 	return nil
 }
 
-func (c *Celeritas) Steps(n int, dsn string) error {
-	m, err := migrate.New("file://" + c.RootPath + "/migrations", dsn)
+func (b *Boilme) Steps(n int, dsn string) error {
+	m, err := migrate.New("file://" + b.RootPath + "/migrations", dsn)
 	if err != nil {
 		return err
 	}
@@ -122,8 +122,8 @@ func (c *Celeritas) Steps(n int, dsn string) error {
 	return nil
 }
 
-func (c *Celeritas) MigrateForce(dsn string) error {
-	m, err := migrate.New("file://" + c.RootPath + "/migrations", dsn)
+func (b *Boilme) MigrateForce(dsn string) error {
+	m, err := migrate.New("file://" + b.RootPath + "/migrations", dsn)
 	if err != nil {
 		return err
 	}
