@@ -1,4 +1,4 @@
-package celeritas
+package boilme
 
 import (
 	"net/http"
@@ -22,7 +22,7 @@ func (b *Boilme) routes() http.Handler {
 	return mux
 }
 
-// Routes are celeritas specific routes, which are mounted in the routes file
+// Routes are boilme specific routes, which are mounted in the routes file
 // in Boilme applications
 func Routes() http.Handler {
 	r := chi.NewRouter()

@@ -1,10 +1,10 @@
-# Celeritas
+# Boilme
 
-Celeritas is a powerful, feature-rich web application framework for Go, designed to streamline web development by providing a robust set of tools and libraries that work seamlessly together.
+Boilme is a powerful, feature-rich web application framework for Go, designed to streamline web development by providing a robust set of tools and libraries that work seamlessly together.
 
 ## Overview
 
-Celeritas (Latin for "swiftness") is inspired by frameworks like Laravel but built specifically for Go. It offers a comprehensive suite of functionality that modern web applications require, from database management to authentication, all within a cohesive, easy-to-use framework.
+Boilme (Latin for "swiftness") is inspired by frameworks like Laravel but built specifically for Go. It offers a comprehensive suite of functionality that modern web applications require, from database management to authentication, all within a cohesive, easy-to-use framework.
 
 ## Key Features
 
@@ -61,23 +61,23 @@ Celeritas (Latin for "swiftness") is inspired by frameworks like Laravel but bui
 
 ### Installation
 
-To install Celeritas, you need to have Go installed on your system.
+To install Boilme, you need to have Go installed on your system.
 
 ```bash
 # Clone the repo (or go get it)
-git clone https://github.com/user/celeritas.git
+git clone https://github.com/user/boilme.git
 
 # Build the CLI tool
-cd celeritas
+cd boilme
 make build_cli
 ```
 
 ### Creating a New Project
 
-Create a new Celeritas project using the CLI:
+Create a new Boilme project using the CLI:
 
 ```bash
-celeritas new myapp
+boilme new myapp
 cd myapp
 ```
 
@@ -85,7 +85,7 @@ This creates a new application with the default structure.
 
 ### Project Structure
 
-A typical Celeritas project has the following structure:
+A typical Boilme project has the following structure:
 
 ```
 myapp/
@@ -104,7 +104,7 @@ myapp/
 
 ### Configuration
 
-Celeritas uses environment variables for configuration. A `.env` file is created in your project root with default values. Modify these as needed:
+Boilme uses environment variables for configuration. A `.env` file is created in your project root with default values. Modify these as needed:
 
 ```env
 # Application
@@ -120,7 +120,7 @@ DATABASE_HOST=localhost
 DATABASE_PORT=5432
 DATABASE_USER=postgres
 DATABASE_PASS=password
-DATABASE_NAME=celeritas
+DATABASE_NAME=boilme
 DATABASE_SSL_MODE=disable
 
 # Redis (optional)
@@ -154,7 +154,7 @@ RENDERER=jet  # jet or go
 Generate a new model using the CLI:
 
 ```bash
-celeritas make model User
+boilme make model User
 ```
 
 This creates a new model file in the `data` directory. Example:
@@ -211,7 +211,7 @@ func (t *User) Insert(m User) (int, error) {
 Generate a new migration using the CLI:
 
 ```bash
-celeritas make migration create_users_table
+boilme make migration create_users_table
 ```
 
 This creates two migration files in the `migrations` directory: one for up (creating the table) and one for down (dropping the table).
@@ -219,7 +219,7 @@ This creates two migration files in the `migrations` directory: one for up (crea
 Run migrations:
 
 ```bash
-celeritas migrate
+boilme migrate
 ```
 
 ### Creating Handlers
@@ -227,7 +227,7 @@ celeritas migrate
 Generate a new handler using the CLI:
 
 ```bash
-celeritas make handler Home
+boilme make handler Home
 ```
 
 This creates a new handler file in the `handlers` directory:
@@ -247,10 +247,10 @@ func (h *Handlers) Home(w http.ResponseWriter, r *http.Request) {
 
 ### Authentication
 
-Celeritas provides built-in authentication functionality. Set it up using:
+Boilme provides built-in authentication functionality. Set it up using:
 
 ```bash
-celeritas make auth
+boilme make auth
 ```
 
 This creates the necessary database tables, models, and handlers for a complete authentication system, including:
@@ -263,7 +263,7 @@ This creates the necessary database tables, models, and handlers for a complete 
 
 ### Middleware
 
-Celeritas comes with several built-in middleware components:
+Boilme comes with several built-in middleware components:
 
 - CSRF protection
 - Session management
@@ -299,7 +299,7 @@ func (a *Application) routes() http.Handler {
 
 ### Templates
 
-Celeritas supports two template engines: Go templates and Jet templates. Configure the template engine in your `.env` file:
+Boilme supports two template engines: Go templates and Jet templates. Configure the template engine in your `.env` file:
 
 ```env
 RENDERER=jet  # or go
@@ -318,7 +318,7 @@ func (h *Handlers) Home(w http.ResponseWriter, r *http.Request) {
 
 ### File Storage
 
-Celeritas provides a unified API for different file storage providers:
+Boilme provides a unified API for different file storage providers:
 
 ```go
 // Upload a file to S3
@@ -342,7 +342,7 @@ if err != nil {
 
 ### Caching
 
-Celeritas supports Redis and Badger for caching:
+Boilme supports Redis and Badger for caching:
 
 ```go
 // Set a cache value
@@ -372,7 +372,7 @@ if err != nil {
 
 ### Mailer
 
-Celeritas includes a powerful mailing system:
+Boilme includes a powerful mailing system:
 
 ```go
 // Send an email
@@ -416,7 +416,7 @@ if !validator.Valid() {
 
 ### API Responses
 
-Celeritas makes it easy to return JSON or XML responses:
+Boilme makes it easy to return JSON or XML responses:
 
 ```go
 // Return JSON
@@ -436,7 +436,7 @@ if err != nil {
 
 ### Session Management
 
-Celeritas provides session management:
+Boilme provides session management:
 
 ```go
 // Set a session value
@@ -457,55 +457,55 @@ app.Session.RenewToken(r.Context())
 
 ### CLI Commands
 
-Celeritas comes with several built-in CLI commands:
+Boilme comes with several built-in CLI commands:
 
 ```bash
 # Show help
-celeritas help
+boilme help
 
 # Create a new application
-celeritas new myapp
+boilme new myapp
 
 # Create a new model
-celeritas make model User
+boilme make model User
 
 # Create a new handler
-celeritas make handler Home
+boilme make handler Home
 
 # Create a new migration
-celeritas make migration create_users_table
+boilme make migration create_users_table
 
 # Run migrations
-celeritas migrate
+boilme migrate
 
 # Rollback a migration
-celeritas migrate down
+boilme migrate down
 
 # Reset migrations
-celeritas migrate reset
+boilme migrate reset
 
 # Create auth tables and handlers
-celeritas make auth
+boilme make auth
 
 # Create session table
-celeritas make session
+boilme make session
 
 # Create a new mail template
-celeritas make mail welcome
+boilme make mail welcome
 
 # Generate a random encryption key
-celeritas make key
+boilme make key
 
 # Put the server in maintenance mode
-celeritas down
+boilme down
 
 # Take the server out of maintenance mode
-celeritas up
+boilme up
 ```
 
 ## Running the Application
 
-Run your Celeritas application:
+Run your Boilme application:
 
 ```bash
 go run cmd/web/*.go
@@ -515,7 +515,7 @@ make run
 
 ## Testing
 
-Celeritas includes a testing framework:
+Boilme includes a testing framework:
 
 ```bash
 # Run all tests

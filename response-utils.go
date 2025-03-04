@@ -1,4 +1,4 @@
-package celeritas
+package boilme
 
 import (
 	"errors"

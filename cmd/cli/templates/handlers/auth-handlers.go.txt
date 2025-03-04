@@ -20,8 +20,8 @@ import (
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
-	"github.com/tsawler/celeritas/mailer"
-	"github.com/tsawler/celeritas/urlsigner"
+	"github.com/tsawler/boilme/mailer"
+	"github.com/tsawler/boilme/urlsigner"
 )
 
 // UserLogin displays the login page

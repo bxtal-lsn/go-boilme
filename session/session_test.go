@@ -9,13 +9,12 @@ import (
 )
 
 func TestSession_InitSession(t *testing.T) {
-
-	c := &Session{
+	b := &Session{
 		CookieLifetime: "100",
-		CookiePersist: "true",
-		CookieName: "celeritas",
-		CookieDomain: "localhost",
-		SessionType: "cookie",
+		CookiePersist:  "true",
+		CookieName:     "boilme",
+		CookieDomain:   "localhost",
+		SessionType:    "cookie",
 	}
 
 	var sm *scs.SessionManager
@@ -47,3 +46,4 @@ func TestSession_InitSession(t *testing.T) {
 		t.Error("wrong type returned testing cookie session. Expected", reflect.ValueOf(sm).Type(), "and got", sessType)
 	}
 }
+
