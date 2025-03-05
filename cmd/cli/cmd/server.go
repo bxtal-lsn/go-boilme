@@ -61,7 +61,7 @@ func init() {
 }
 
 func rpcClient(inMaintenanceMode bool) error {
-	setup(nil, nil)
+	setupRoot(nil, nil)
 
 	rpcPort := os.Getenv("RPC_PORT")
 	if rpcPort == "" {

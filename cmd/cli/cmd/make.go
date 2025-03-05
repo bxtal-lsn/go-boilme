@@ -44,7 +44,7 @@ The type parameter is optional and can be 'fizz' (default) or 'sql'.`,
 	Args: cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Setup necessary for database operations
-		setup(cmd, args)
+		setupRoot(cmd, args)
 
 		name := args[0]
 		migrationType := "fizz"
@@ -96,7 +96,7 @@ var makeAuthCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Generate auth system",
 	Run: func(cmd *cobra.Command, args []string) {
-		setup(cmd, args)
+		setupRoot(cmd, args)
 		err := doAuth()
 		if err != nil {
 			exitGracefully(err)
@@ -123,7 +123,7 @@ var makeSessionCmd = &cobra.Command{
 	Use:   "session",
 	Short: "Create session table",
 	Run: func(cmd *cobra.Command, args []string) {
-		setup(cmd, args)
+		setupRoot(cmd, args)
 		err := doSessionTable()
 		if err != nil {
 			exitGracefully(err)
