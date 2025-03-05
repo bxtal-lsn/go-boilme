@@ -41,7 +41,7 @@ var authCmd = &cobra.Command{
 		s.Start()
 
 		// Setup necessary for database operations
-		setup(cmd, args)
+		setupRoot(cmd, args)
 
 		err := doAuth()
 

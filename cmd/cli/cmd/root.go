@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/bxtal-lsn/go-boilme"
@@ -31,6 +32,12 @@ func Execute() {
 }
 
 func init() {
+	rootPath, _ := os.Getwd()
+	err := boil.New(rootPath)
+	if err != nil {
+		fmt.Printf("Error initializing boilme: %v\n", err)
+		os.Exit(1)
+	}
 	// Here you will define your flags and configuration settings
 	rootCmd.PersistentFlags().StringP("config", "c", "", "config file (default is .env)")
 
@@ -94,8 +101,7 @@ PS> boilme completion powershell | Out-String | Invoke-Expression
 }
 
 // setup initializes the application
-func setup(cmd *cobra.Command, args []string) {
-	// Load .env file
+func setupRoot(cmd *cobra.Command, args []string) { // Load .env file
 	// This should be done in each command that needs it
 	if cmd.Use != "new" && cmd.Use != "version" && cmd.Use != "help" {
 		err := os.Chdir(boil.RootPath)
