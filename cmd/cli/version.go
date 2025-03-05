@@ -13,3 +13,4 @@ var versionCmd = &cobra.Command{
 		color.Yellow("Application version: " + version)
 	},
 }
+
